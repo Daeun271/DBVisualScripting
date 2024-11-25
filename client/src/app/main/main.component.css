@@ -1,0 +1,38 @@
+.main-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+}
+
+app-header {
+    flex: 0;
+}
+
+.content-wrapper {
+    flex: 1;
+    position: relative;
+    --sidebar-width: 300px;
+    --sidebar-visible-width: 0px;
+}
+
+.sidebarOpen {
+    --sidebar-visible-width: var(--sidebar-width);
+}
+
+app-sidebar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: var(--sidebar-visible-width);
+    height: 100%;
+    transition: width 0.3s ease;
+}
+
+app-content {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: calc(100% - var(--sidebar-visible-width));
+    height: 100%;
+    transition: width 0.3s ease;
+}
