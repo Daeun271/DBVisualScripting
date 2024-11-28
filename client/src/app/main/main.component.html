@@ -1,7 +1,14 @@
 <div class="main-wrapper">
-    <app-header></app-header>
-    <div class="content-wrapper" [class.sidebarOpen]="isSidebarOpen">
+    <app-header (eventEmitter)="setCurrentContent($event)"></app-header>
+    <div
+        *ngIf="!isAuth; else authBlock"
+        class="content-wrapper"
+        [class.sidebarOpen]="isSidebarOpen"
+    >
         <app-sidebar></app-sidebar>
         <app-content></app-content>
     </div>
+    <ng-template #authBlock>
+        <app-auth [isRegister]="isRegisterMode" class="auth-wrapper"></app-auth>
+    </ng-template>
 </div>

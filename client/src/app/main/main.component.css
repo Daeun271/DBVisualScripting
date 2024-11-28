@@ -36,3 +36,11 @@ app-content {
     height: 100%;
     transition: width 0.3s ease;
 }
+
+.auth-wrapper {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}

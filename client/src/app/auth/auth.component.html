@@ -1,1 +1,70 @@
-<p>auth works!</p>
+<mat-card appearance="outlined">
+    <mat-card-header>
+        <mat-card-title *ngIf="isRegister; else login">Register</mat-card-title>
+        <ng-template #login>
+            <mat-card-title>Login</mat-card-title>
+        </ng-template>
+    </mat-card-header>
+    <mat-card-content>
+        <form>
+            <mat-form-field *ngIf="isRegister" class="form-field">
+                <mat-label>Username</mat-label>
+                <input
+                    matInput
+                    placeholder="Mustermann"
+                    [(ngModel)]="username"
+                    name="username"
+                />
+            </mat-form-field>
+            <mat-form-field class="form-field">
+                <mat-label>Email</mat-label>
+                <input
+                    matInput
+                    placeholder="test@example.com"
+                    [formControl]="email"
+                    (blur)="updateEmailErrorMessage()"
+                    required
+                />
+                @if (email.invalid) {
+                    <mat-error>{{ emailErrorMessage() }}</mat-error>
+                }
+            </mat-form-field>
+            <mat-form-field>
+                <mat-label>Password</mat-label>
+                <input
+                    matInput
+                    [type]="hide() ? 'password' : 'text'"
+                    [formControl]="password"
+                    (blur)="updatePasswordErrorMessage()"
+                    required
+                />
+                <button
+                    mat-icon-button
+                    matSuffix
+                    (click)="toggle($event)"
+                    [attr.aria-label]="'Hide password'"
+                    [attr.aria-pressed]="hide()"
+                >
+                    <mat-icon>{{
+                        hide() ? 'visibility_off' : 'visibility'
+                    }}</mat-icon>
+                </button>
+                @if (password.invalid) {
+                    <mat-error>{{ passwordErrorMessage() }}</mat-error>
+                }
+            </mat-form-field>
+        </form>
+    </mat-card-content>
+    <mat-card-actions>
+        <div class="actions-box" *ngIf="isRegister; else loginActions">
+            <button mat-button (click)="register()">Register</button>
+            <button mat-button>Register with Google</button>
+        </div>
+        <ng-template #loginActions>
+            <div class="actions-box">
+                <button mat-button (click)="logIn()">Login</button>
+                <button mat-button>Login with Google</button>
+            </div>
+        </ng-template>
+    </mat-card-actions>
+</mat-card>

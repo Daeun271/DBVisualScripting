@@ -3,11 +3,11 @@
         <button mat-icon-button (click)="toggleSidebar()">
             <mat-icon>menu</mat-icon>
         </button>
-        <span class="navbar-brand">My App</span>
+        <a class="navbar-brand" (click)="click('home')">My App</a>
     </div>
 
     <div class="navbar-right">
-        <button mat-flat-button>Register</button>
-        <button mat-flat-button>Log In</button>
+        <button mat-flat-button (click)="click('register')">Register</button>
+        <button mat-flat-button (click)="click('login')">Log In</button>
     </div>
 </div>
