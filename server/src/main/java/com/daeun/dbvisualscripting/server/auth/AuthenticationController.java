@@ -6,16 +6,22 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 
 import org.springframework.validation.BindingResult;
+
+import java.util.Map;
+import java.util.Arrays;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.GetMapping;
+
 
 @RestController
 @RequestMapping("/auth")
@@ -55,7 +61,7 @@ public class AuthenticationController {
         
         response.addHeader("Set-Cookie", cookie.toString());
         
-        return ResponseEntity.status(HttpStatus.CREATED).body(username);
+        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("username", username));
     }
 
     @PostMapping("/login")
@@ -79,7 +85,7 @@ public class AuthenticationController {
         
         response.addHeader("Set-Cookie", cookie.toString());
 
-        return ResponseEntity.ok().body(username);
+        return ResponseEntity.ok().body(Map.of("username", username));
     }
 
     @PostMapping("/logout")
@@ -94,5 +100,15 @@ public class AuthenticationController {
         response.addHeader("Set-Cookie", cookie.toString());
             
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/status")
+    public ResponseEntity<Map<String, Boolean>> checkAuthStatus(HttpServletRequest request) {
+        boolean isAuthenticated = request.getCookies() != null && 
+            Arrays.stream(request.getCookies())
+                .anyMatch(cookie -> "jwt".equals(cookie.getName()) && 
+                                    !cookie.getValue().isEmpty());
+        
+        return ResponseEntity.ok(Map.of("authenticated", isAuthenticated));
     }
 }
