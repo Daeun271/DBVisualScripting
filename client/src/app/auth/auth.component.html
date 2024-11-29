@@ -12,9 +12,13 @@
                 <input
                     matInput
                     placeholder="Mustermann"
-                    [(ngModel)]="username"
+                    [formControl]="username"
                     name="username"
+                    (blur)="updateUsernameErrorMessage()"
                 />
+                @if (username.invalid) {
+                    <mat-error>{{ usernameErrorMessage() }}</mat-error>
+                }
             </mat-form-field>
             <mat-form-field class="form-field">
                 <mat-label>Email</mat-label>

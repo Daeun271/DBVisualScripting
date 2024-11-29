@@ -26,6 +26,10 @@ export class MainComponent implements OnInit {
     }
 
     setCurrentContent(content: String) {
+        if (content === 'logout') {
+            console.log('Logging out');
+            return;
+        }
         this.isAuth = content === 'register' || content === 'login';
         this.isRegisterMode = content === 'register';
     }

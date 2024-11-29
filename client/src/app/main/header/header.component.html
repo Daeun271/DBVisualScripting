@@ -6,8 +6,11 @@
         <a class="navbar-brand" (click)="click('home')">My App</a>
     </div>
 
-    <div class="navbar-right">
+    <div *ngIf="!isAuthenticated; else unauthenticated" class="navbar-right">
         <button mat-flat-button (click)="click('register')">Register</button>
         <button mat-flat-button (click)="click('login')">Log In</button>
     </div>
+    <ng-template #unauthenticated>
+        <button mat-flat-button (click)="click('logout')">Log Out</button>
+    </ng-template>
 </div>

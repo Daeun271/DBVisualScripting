@@ -9,6 +9,10 @@
         <app-content></app-content>
     </div>
     <ng-template #authBlock>
-        <app-auth [isRegister]="isRegisterMode" class="auth-wrapper"></app-auth>
+        <app-auth
+            [isRegister]="isRegisterMode"
+            (onSucess)="setCurrentContent($event)"
+            class="auth-wrapper"
+        ></app-auth>
     </ng-template>
 </div>
