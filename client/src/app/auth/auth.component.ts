@@ -20,7 +20,7 @@ export class AuthComponent {
     @Input() isRegister = false;
 
     username = '';
-    readonly email = new FormControl('', [Validators.required, Validators.pattern(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/)]);
+    readonly email = new FormControl('', [Validators.required, Validators.email]);
     readonly password = new FormControl('', [Validators.required, Validators.minLength(8), Validators.maxLength(16), Validators.pattern(/^(?=.*[A-Za-z])(?=.*\d).+$/)]);
 
     constructor() {
@@ -51,7 +51,7 @@ export class AuthComponent {
     updateEmailErrorMessage() {
         if (this.email.hasError('required')) {
             this.emailErrorMessage.set('You must enter a value');
-        } else if (this.email.hasError('pattern')) {
+        } else if (this.email.hasError('email')) {
             this.emailErrorMessage.set('Not a valid email');
         } else {
             this.emailErrorMessage.set('');
