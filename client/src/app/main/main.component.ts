@@ -25,7 +25,7 @@ export class MainComponent implements OnInit {
         });
     }
 
-    setCurrentContent(content: string) {
+    setCurrentContent(content: String) {
         this.isAuth = content === 'register' || content === 'login';
         this.isRegisterMode = content === 'register';
     }
