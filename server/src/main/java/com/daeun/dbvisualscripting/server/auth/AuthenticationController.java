@@ -30,31 +30,32 @@ public class AuthenticationController {
             return ResponseEntity.badRequest().body(bindingResult.getFieldErrors());
         }
 
+        UserEntity createdUser = null;
         try {
-            UserEntity createdUser = authenticationService.create(
+            createdUser = authenticationService.create(
                 registerRequest.getUsername(), 
                 registerRequest.getEmail(), 
                 registerRequest.getPassword()
             );
-            
-            String username = createdUser.getName();
-
-            final String token = jwtTokenService.generateAccessToken(createdUser);
-
-            ResponseCookie cookie = ResponseCookie.from("jwt", token)
-                .httpOnly(true)
-                // .secure(true) only for HTTPS
-                .sameSite("Strict")
-                .path("/")
-                .maxAge(jwtTokenService.getExpirationInSec())
-                .build();
-            
-            response.addHeader("Set-Cookie", cookie.toString());
-            
-            return ResponseEntity.status(HttpStatus.CREATED).body(username);
         } catch (DataIntegrityViolationException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
+            
+        String username = createdUser.getName();
+
+        final String token = jwtTokenService.generateAccessToken(createdUser);
+
+        ResponseCookie cookie = ResponseCookie.from("jwt", token)
+            .httpOnly(true)
+            // .secure(true) only for HTTPS
+            .sameSite("Strict")
+            .path("/")
+            .maxAge(jwtTokenService.getExpirationInSec())
+            .build();
+        
+        response.addHeader("Set-Cookie", cookie.toString());
+        
+        return ResponseEntity.status(HttpStatus.CREATED).body(username);
     }
 
     @PostMapping("/login")
@@ -63,26 +64,22 @@ public class AuthenticationController {
             return ResponseEntity.badRequest().body(bindingResult.getFieldErrors());
         }
 
-        try {
-            UserEntity user = authenticationService.login(loginRequest.getEmail(), loginRequest.getPassword());
-            String username = user.getName();
+        UserEntity user = authenticationService.login(loginRequest.getEmail(), loginRequest.getPassword());
+        String username = user.getName();
 
-            final String token = jwtTokenService.generateAccessToken(user);
+        final String token = jwtTokenService.generateAccessToken(user);
 
-            ResponseCookie cookie = ResponseCookie.from("jwt", token)
-                .httpOnly(true)
-                // .secure(true) only for HTTPS
-                .sameSite("Strict")
-                .path("/")
-                .maxAge(jwtTokenService.getExpirationInSec())
-                .build();
-            
-            response.addHeader("Set-Cookie", cookie.toString());
+        ResponseCookie cookie = ResponseCookie.from("jwt", token)
+            .httpOnly(true)
+            // .secure(true) only for HTTPS
+            .sameSite("Strict")
+            .path("/")
+            .maxAge(jwtTokenService.getExpirationInSec())
+            .build();
+        
+        response.addHeader("Set-Cookie", cookie.toString());
 
-            return ResponseEntity.ok().body(username);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
-        }
+        return ResponseEntity.ok().body(username);
     }
 
     @PostMapping("/logout")
