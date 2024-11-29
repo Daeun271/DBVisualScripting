@@ -10,6 +10,8 @@ import { FormControl, FormsModule, ReactiveFormsModule, Validators } from '@angu
 import { merge } from 'rxjs';
 import { register, login } from '../../api';
 import { Output, EventEmitter } from '@angular/core';
+import { AuthService } from './auth.service';
+import { Subscription } from 'rxjs';
 
 @Component({
     selector: 'app-auth',
@@ -21,14 +23,15 @@ import { Output, EventEmitter } from '@angular/core';
 export class AuthComponent {
     @Input() isRegister = false;
 
-    username = '';
+    readonly username = new FormControl('', [Validators.maxLength(25)]);
     readonly email = new FormControl('', [Validators.required, Validators.email]);
     readonly password = new FormControl('', [Validators.required, Validators.minLength(8), Validators.maxLength(16), Validators.pattern(/^(?=.*[A-Za-z])(?=.*\d).+$/)]);
 
-    constructor() {
+    constructor(private authService: AuthService) {
         merge(this.email.statusChanges, this.email.valueChanges, this.password.statusChanges, this.password.valueChanges)
             .pipe(takeUntilDestroyed())
             .subscribe(() => {
+                this.updateUsernameErrorMessage();
                 this.updateEmailErrorMessage();
                 this.updatePasswordErrorMessage();
             });
@@ -41,7 +44,7 @@ export class AuthComponent {
     }
 
     resetForm() {
-        this.username = '';
+        this.username.reset('');
         this.email.reset('');
         this.password.reset('');
         this.emailErrorMessage.set('');
@@ -76,6 +79,16 @@ export class AuthComponent {
         }
     }
 
+    usernameErrorMessage = signal('');
+
+    updateUsernameErrorMessage() {
+        if (this.username.hasError('maxlength')) {
+            this.usernameErrorMessage.set('Username must be at most 25 characters long');
+        } else {
+            this.usernameErrorMessage.set('');
+        }
+    }
+
     hide = signal(true);
     toggle(event: MouseEvent) {
         this.hide.set(!this.hide());
@@ -83,10 +96,12 @@ export class AuthComponent {
     }
 
     validateFields(): boolean {
+        this.username.markAsTouched();
         this.email.markAsTouched();
         this.password.markAsTouched();
 
-        if (this.email.invalid || this.password.invalid) {
+        if (this.username.invalid || this.email.invalid || this.password.invalid) {
+            this.updateUsernameErrorMessage();
             this.updateEmailErrorMessage();
             this.updatePasswordErrorMessage();
 
@@ -98,35 +113,39 @@ export class AuthComponent {
 
     @Output() onSucess = new EventEmitter<String>();
 
-    async register() {
+    register() {
         if (!this.validateFields()) {
             return;
         }
 
-        try {
-            await register(this.username, this.email.value!, this.password.value!);
-        } catch (error) {
-            console.error(error);
-            return;
-        }
-
-        this.onSucess.emit('home');
-        this.resetForm();
+        this.authService.register(this.username.value!, this.email.value!, this.password.value!)
+            .subscribe({
+                next: () => {
+                    this.onSucess.emit('home');
+                    this.resetForm();
+                },
+                error: (error) => {
+                    console.error('Registration failed', error);
+                    // Handle registration error (show message, etc.)
+                }
+            });
     }
 
-    async logIn() {
+    logIn() {
         if (!this.validateFields()) {
             return;
         }
 
-        try {
-            await login(this.username, this.password.value!);
-        } catch (error) {
-            console.error(error);
-            return;
-        }
-
-        this.onSucess.emit('home');
-        this.resetForm();
+        this.authService.login(this.email.value!, this.password.value!)
+            .subscribe({
+                next: () => {
+                    this.onSucess.emit('home');
+                    this.resetForm();
+                },
+                error: (error) => {
+                    console.error('Login failed', error);
+                    // Handle login error (show message, etc.)
+                }
+            });
     }
 }
