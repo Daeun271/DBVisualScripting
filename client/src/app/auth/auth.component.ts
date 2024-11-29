@@ -8,6 +8,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
 import { FormControl, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { merge } from 'rxjs';
+import { register, login } from '../../api';
+import { Output, EventEmitter } from '@angular/core';
 
 @Component({
     selector: 'app-auth',
@@ -94,19 +96,37 @@ export class AuthComponent {
         return true;
     }
 
-    register() {
+    @Output() onSucess = new EventEmitter<String>();
+
+    async register() {
         if (!this.validateFields()) {
             return;
         }
 
-        // todo: register
+        try {
+            await register(this.username, this.email.value!, this.password.value!);
+        } catch (error) {
+            console.error(error);
+            return;
+        }
+
+        this.onSucess.emit('home');
+        this.resetForm();
     }
 
-    logIn() {
+    async logIn() {
         if (!this.validateFields()) {
             return;
         }
 
-        // todo: log in
+        try {
+            await login(this.username, this.password.value!);
+        } catch (error) {
+            console.error(error);
+            return;
+        }
+
+        this.onSucess.emit('home');
+        this.resetForm();
     }
 }
