@@ -9,13 +9,10 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
-import java.util.Set;
-import java.util.HashSet;
 
 @Component
 public class JwtTokenService {
@@ -24,8 +21,6 @@ public class JwtTokenService {
 
     @Value("${jwt.expiration}")
     private long expiration;
-
-    private final Set<String> blacklistedTokens = Collections.synchronizedSet(new HashSet<>());
 
     public String generateAccessToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
@@ -72,15 +67,11 @@ public class JwtTokenService {
     }
 
     public Boolean validateToken(String token, UserDetails userDetails) {
-        if (blacklistedTokens.contains(token)) {
-            return false;
-        }
-        
         final String username = extractUsername(token);
         return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }
 
-    public void invalidateToken(String token) {
-        blacklistedTokens.add(token);
+    public long getExpirationInSec() {
+        return expiration / 1000;
     }
 }

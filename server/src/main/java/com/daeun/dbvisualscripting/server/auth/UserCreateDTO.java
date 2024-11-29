@@ -11,7 +11,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class UserCreateDTO {
-    @Size(min = 1, max = 25)
+    @Size(max = 25)
     private String username;
 
     @NotEmpty(message = "Email is required.")

@@ -6,12 +6,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 
 import org.springframework.validation.BindingResult;
+
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 
 import lombok.RequiredArgsConstructor;
 
@@ -23,7 +25,7 @@ public class AuthenticationController {
     private final AuthenticationService authenticationService;
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@Valid @RequestBody UserCreateDTO registerRequest, BindingResult bindingResult) {
+    public ResponseEntity<?> register(@Valid @RequestBody UserCreateDTO registerRequest, BindingResult bindingResult, HttpServletResponse response) {
         if (bindingResult.hasErrors()) {
             return ResponseEntity.badRequest().body(bindingResult.getFieldErrors());
         }
@@ -35,44 +37,65 @@ public class AuthenticationController {
                 registerRequest.getPassword()
             );
             
-            createdUser.setPassword(null);
+            String username = createdUser.getName();
+
+            final String token = jwtTokenService.generateAccessToken(createdUser);
+
+            ResponseCookie cookie = ResponseCookie.from("jwt", token)
+                .httpOnly(true)
+                // .secure(true) only for HTTPS
+                .sameSite("Strict")
+                .path("/")
+                .maxAge(jwtTokenService.getExpirationInSec())
+                .build();
             
-            return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
+            response.addHeader("Set-Cookie", cookie.toString());
+            
+            return ResponseEntity.status(HttpStatus.CREATED).body(username);
         } catch (DataIntegrityViolationException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> createAuthenticationToken(@RequestBody UserLoginDTO loginRequest, BindingResult bindingResult) throws Exception {
+    public ResponseEntity<?> login(@RequestBody UserLoginDTO loginRequest, BindingResult bindingResult, HttpServletResponse response) throws Exception {
         if (bindingResult.hasErrors()) {
             return ResponseEntity.badRequest().body(bindingResult.getFieldErrors());
         }
 
         try {
             UserEntity user = authenticationService.login(loginRequest.getEmail(), loginRequest.getPassword());
-            user.setPassword(null);
+            String username = user.getName();
 
-                
             final String token = jwtTokenService.generateAccessToken(user);
 
-            return ResponseEntity.ok(new AuthenticationResponseDTO(token));
+            ResponseCookie cookie = ResponseCookie.from("jwt", token)
+                .httpOnly(true)
+                // .secure(true) only for HTTPS
+                .sameSite("Strict")
+                .path("/")
+                .maxAge(jwtTokenService.getExpirationInSec())
+                .build();
+            
+            response.addHeader("Set-Cookie", cookie.toString());
+
+            return ResponseEntity.ok().body(username);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         }
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(HttpServletRequest request) {
-        String authorizationHeader = request.getHeader("Authorization");
-        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            String token = authorizationHeader.substring(7);
-
-            jwtTokenService.invalidateToken(token);
+    public ResponseEntity<?> logout(HttpServletResponse response) {
+        ResponseCookie cookie = ResponseCookie.from("jwt", "")
+            .httpOnly(true)
+            .sameSite("Strict")
+            .path("/")
+            .maxAge(0)
+            .build();
+        
+        response.addHeader("Set-Cookie", cookie.toString());
             
-            return ResponseEntity.ok().build();
-        }
-
-        return ResponseEntity.badRequest().body("No token provided");
+        return ResponseEntity.ok().build();
     }
 }
