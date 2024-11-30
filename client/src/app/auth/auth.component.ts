@@ -8,14 +8,13 @@ import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
 import { FormControl, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { merge } from 'rxjs';
-import { register, login } from '../../api';
 import { Output, EventEmitter } from '@angular/core';
-import { AuthService } from './auth.service';
-import { Subscription } from 'rxjs';
+import { AuthService } from '../../api/auth.service';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
     selector: 'app-auth',
-    imports: [MatCardModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatIconModule, CommonModule, FormsModule, ReactiveFormsModule],
+    imports: [MatCardModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatIconModule, CommonModule, FormsModule, ReactiveFormsModule, MatProgressSpinnerModule],
     templateUrl: './auth.component.html',
     styleUrl: './auth.component.css',
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -113,39 +112,61 @@ export class AuthComponent {
 
     @Output() onSucess = new EventEmitter<String>();
 
+    isLoading = signal(false);
+
+    registerErrorMessage = signal('');
+
     register() {
+        if (this.isLoading()) {
+            return;
+        }
+
         if (!this.validateFields()) {
             return;
         }
+
+        this.isLoading.set(true);
 
         this.authService.register(this.username.value!, this.email.value!, this.password.value!)
             .subscribe({
                 next: () => {
                     this.onSucess.emit('home');
-                    this.resetForm();
                 },
                 error: (error) => {
-                    console.error('Registration failed', error);
-                    // Handle registration error (show message, etc.)
+                    this.registerErrorMessage.set('Registration failed. Please try again.');
                 }
+            })
+            .add(() => {
+                this.isLoading.set(false);
+                this.resetForm();
             });
     }
 
+    loginErrorMessage = signal('');
+
     logIn() {
+        if (this.isLoading()) {
+            return;
+        }
+
         if (!this.validateFields()) {
             return;
         }
+
+        this.isLoading.set(true);
 
         this.authService.login(this.email.value!, this.password.value!)
             .subscribe({
                 next: () => {
                     this.onSucess.emit('home');
-                    this.resetForm();
                 },
                 error: (error) => {
-                    console.error('Login failed', error);
-                    // Handle login error (show message, etc.)
+                    this.loginErrorMessage.set('Login failed. Please try again.');
                 }
+            })
+            .add(() => {
+                this.isLoading.set(false);
+                this.resetForm();
             });
     }
 }
