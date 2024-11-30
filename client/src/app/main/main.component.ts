@@ -1,8 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { HeaderComponent } from './header/header.component';
 import { ContentComponent } from './content/content.component';
 import { SidebarComponent } from './sidebar/sidebar.component';
-import { SidebarService } from './sidebar/sidebar.service';
 import { CommonModule } from '@angular/common';
 import { AuthComponent } from '../auth/auth.component';
 
@@ -12,24 +11,18 @@ import { AuthComponent } from '../auth/auth.component';
     templateUrl: './main.component.html',
     styleUrl: './main.component.css',
 })
-export class MainComponent implements OnInit {
+export class MainComponent {
     isSidebarOpen = true;
+
+
+    toggleSidebar(): void {
+        this.isSidebarOpen = !this.isSidebarOpen;
+    }
+
     isAuth = false;
     isRegisterMode = false;
 
-    constructor(private sidebarService: SidebarService) { }
-
-    ngOnInit() {
-        this.sidebarService.isSidebarOpen$.subscribe(isOpen => {
-            this.isSidebarOpen = isOpen;
-        });
-    }
-
     setCurrentContent(content: String) {
-        if (content === 'logout') {
-            console.log('Logging out');
-            return;
-        }
         this.isAuth = content === 'register' || content === 'login';
         this.isRegisterMode = content === 'register';
     }

@@ -1,16 +1,18 @@
 <div mat-toolbar class="navbar">
     <div class="navbar-left">
-        <button mat-icon-button (click)="toggleSidebar()">
+        <button mat-icon-button (click)="emitToggle()">
             <mat-icon>menu</mat-icon>
         </button>
         <a class="navbar-brand" (click)="click('home')">My App</a>
     </div>
 
-    <div *ngIf="!isAuthenticated; else unauthenticated" class="navbar-right">
+    <div *ngIf="!isAuthenticated(); else unauthenticated" class="navbar-right">
         <button mat-flat-button (click)="click('register')">Register</button>
         <button mat-flat-button (click)="click('login')">Log In</button>
     </div>
     <ng-template #unauthenticated>
-        <button mat-flat-button (click)="click('logout')">Log Out</button>
+        <button mat-flat-button (click)="openDialog('3ms', '3ms')">
+            Log Out
+        </button>
     </ng-template>
 </div>

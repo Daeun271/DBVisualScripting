@@ -1,5 +1,8 @@
 <div class="main-wrapper">
-    <app-header (eventEmitter)="setCurrentContent($event)"></app-header>
+    <app-header
+        (eventEmitter)="setCurrentContent($event)"
+        (toggleEventEmitter)="toggleSidebar()"
+    ></app-header>
     <div
         *ngIf="!isAuth; else authBlock"
         class="content-wrapper"
